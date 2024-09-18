@@ -1,0 +1,161 @@
+# pytorch_lightning==2.1.1
+seed_everything: 4231516403
+trainer:
+  accelerator: auto
+  strategy: auto
+  devices: auto
+  num_nodes: 1
+  precision: null
+  logger:
+  - <pytorch_lightning.loggers.tensorboard.TensorBoardLogger object at 0x14bd2070c0d0>
+  - <pytorch_lightning.loggers.wandb.WandbLogger object at 0x14bde45e6e60>
+  callbacks: null
+  fast_dev_run: false
+  max_epochs: null
+  min_epochs: null
+  max_steps: -1
+  min_steps: null
+  max_time: '1:23:30:00'
+  limit_train_batches: null
+  limit_val_batches: null
+  limit_test_batches: null
+  limit_predict_batches: null
+  overfit_batches: 0.0
+  val_check_interval: null
+  check_val_every_n_epoch: 1
+  num_sanity_val_steps: null
+  log_every_n_steps: null
+  enable_checkpointing: null
+  enable_progress_bar: null
+  enable_model_summary: null
+  accumulate_grad_batches: 1
+  gradient_clip_val: null
+  gradient_clip_algorithm: null
+  deterministic: null
+  benchmark: null
+  inference_mode: true
+  use_distributed_sampler: true
+  profiler: null
+  detect_anomaly: false
+  barebones: false
+  plugins:
+  - <lightning_fabric.plugins.environments.slurm.SLURMEnvironment object at 0x14bd1fe07910>
+  sync_batchnorm: false
+  reload_dataloaders_every_n_epochs: 0
+  default_root_dir: null
+data:
+  identifier: point_clouds_10
+  train:
+    dirs:
+    - /scratch/gpfs/IOJALVO/gnn-tracking/object_condensation/point_clouds_v10/part_1
+    - /scratch/gpfs/IOJALVO/gnn-tracking/object_condensation/point_clouds_v10/part_2
+    - /scratch/gpfs/IOJALVO/gnn-tracking/object_condensation/point_clouds_v10/part_3
+    - /scratch/gpfs/IOJALVO/gnn-tracking/object_condensation/point_clouds_v10/part_4
+    - /scratch/gpfs/IOJALVO/gnn-tracking/object_condensation/point_clouds_v10/part_5
+    - /scratch/gpfs/IOJALVO/gnn-tracking/object_condensation/point_clouds_v10/part_6
+    - /scratch/gpfs/IOJALVO/gnn-tracking/object_condensation/point_clouds_v10/part_7
+    - /scratch/gpfs/IOJALVO/gnn-tracking/object_condensation/point_clouds_v10/part_8
+    sample_size: 450
+  val:
+    dirs:
+    - /scratch/gpfs/IOJALVO/gnn-tracking/object_condensation/point_clouds_v10/part_9
+    stop: 5
+  test: null
+  cpus: 6
+ckpt: lightning_logs/savvy-wonderful-catfish/checkpoints/epoch=131-step=23850.ckpt
+preproc_ckpt: lightning_logs/fast-ninja-ibis/checkpoints/epoch=140-step=27900.compat.ckpt
+ckpt_path: null
+model:
+  class_path: gnn_tracking.training.tc.TCModule
+  init_args:
+    loss_fct:
+      class_path: gnn_tracking.metrics.losses.metric_learning.GraphConstructionHingeEmbeddingLoss
+      init_args:
+        lw_repulsive: 0.15
+        r_emb: 1.0
+        max_num_neighbors: 64
+        pt_thld: 0.9
+        max_eta: 4.0
+        p_attr: 2.0
+        p_rep: 2.0
+        rep_normalization: n_hits_oi
+        rep_oi_only: true
+    cluster_scanner:
+      class_path: gnn_tracking.postprocessing.dbscanscanner.DBSCANHyperParamScanner
+      init_args:
+        eps_range:
+        - 0
+        - 1
+        min_samples_range:
+        - 1
+        - 4
+        n_trials: 60
+        keep_best: 30
+        n_jobs: 6
+        guide: double_majority_pt0.9
+        pt_thlds:
+        - 0.0
+        - 0.5
+        - 0.9
+        - 1.5
+        max_eta: 4.0
+    model:
+      class_path: gnn_tracking.models.track_condensation_networks.GraphTCNForMLGCPipeline
+      init_args:
+        node_indim: 38
+        edge_indim: 76
+        h_dim: 192
+        e_dim: 192
+        h_outdim: 24
+        hidden_dim: 192
+        L_hc: 4
+        alpha_hc: 0.5
+        ec: null
+        feed_edge_weights: false
+        ec_threshold: 0.5
+        mask_orphan_nodes: false
+        use_ec_embeddings_for_hc: false
+        alpha_latent: 0.5
+        n_embedding_coords: 24
+        heterogeneous_node_encoder: false
+    optimizer:
+      class_path: torch.optim.Adam
+      init_args:
+        lr: 7.0e-05
+        betas:
+        - 0.9
+        - 0.999
+        eps: 1.0e-08
+        weight_decay: 0.0
+        amsgrad: false
+        foreach: null
+        maximize: false
+        capturable: false
+        differentiable: false
+        fused: null
+    scheduler:
+      class_path: torch.optim.lr_scheduler.ExponentialLR
+      init_args:
+        gamma: 0.933
+        last_epoch: -1
+        verbose: false
+    preproc:
+      class_path: gnn_tracking.models.graph_construction.MLGraphConstructionFromChkpt
+      init_args:
+        ml_chkpt_path: /home/kl5675/Documents/23/git_sync/hyperparameter_optimization2/scripts/full_detector/lightning_logs/amber-gibbon-of-joy/checkpoints/epoch=78-step=71100.compat_newcompatible.ckpt
+        ec_chkpt_path: ''
+        ml_class_name: gnn_tracking.training.ml.MLModule
+        ec_class_name: gnn_tracking.training.ec.ECModule
+        ml_model_only: true
+        ec_model_only: true
+        max_radius: 1.0
+        max_num_neighbors: 30
+        use_embedding_features: true
+        ratio_of_false: null
+        build_edge_features: true
+        ec_threshold: null
+        ml_freeze: true
+        ec_freeze: true
+        embedding_slice:
+        - null
+        - null

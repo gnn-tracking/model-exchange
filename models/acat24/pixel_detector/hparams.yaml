@@ -1,0 +1,69 @@
+model:
+  class_path: gnn_tracking.models.track_condensation_networks.GraphTCNForMLGCPipeline
+  init_args:
+    node_indim: 22
+    edge_indim: 44
+    h_dim: 192
+    e_dim: 192
+    h_outdim: 24
+    hidden_dim: 192
+    L_hc: 5
+    alpha_hc: 0.5
+    feed_edge_weights: false
+    ec_threshold: 0.5
+    mask_orphan_nodes: false
+    use_ec_embeddings_for_hc: false
+    alpha_latent: 0.5
+    n_embedding_coords: 8
+preproc:
+  class_path: gnn_tracking.models.graph_construction.MLGraphConstruction
+  init_args:
+    max_radius: 1.0
+    max_num_neighbors: 17
+    use_embedding_features: true
+    ratio_of_false: null
+    build_edge_features: true
+    ec_threshold: null
+    ml_freeze: true
+    ec_freeze: true
+    embedding_slice:
+    - null
+    - null
+    ml:
+      class_path: gnn_tracking.models.graph_construction.GraphConstructionFCNN
+      init_args:
+        in_dim: 14
+        hidden_dim: 256
+        out_dim: 8
+        depth: 6
+        alpha: 0.6
+    ec: null
+loss_fct:
+  class_path: gnn_tracking.metrics.losses.metric_learning.GraphConstructionHingeEmbeddingLoss
+  init_args:
+    lw_repulsive: 0.05
+    r_emb: 1.0
+    max_num_neighbors: 256
+    pt_thld: 0.9
+    max_eta: 4.0
+    p_attr: 2.0
+    p_rep: 2.0
+cluster_scanner:
+  class_path: gnn_tracking.postprocessing.dbscanscanner.DBSCANHyperParamScanner
+  init_args:
+    eps_range:
+    - 0
+    - 1
+    min_samples_range:
+    - 1
+    - 4
+    n_trials: 60
+    keep_best: 30
+    n_jobs: 6
+    guide: double_majority_pt0.9
+    pt_thlds:
+    - 0.0
+    - 0.5
+    - 0.9
+    - 1.5
+    max_eta: 4.0
